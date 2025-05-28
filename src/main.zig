@@ -12,6 +12,7 @@ const TokenType = enum {
     NUMBER,
     SEMICOLON,
     PLUS,
+    MINUS,
     EOF,
     INVALID,
 };
@@ -76,6 +77,11 @@ const Lexer = struct {
             return Token{ .type = .PLUS, .value = self.source[start..self.pos] };
         }
 
+        if (self.source[self.pos] == '-') {
+            self.pos += 1;
+            return Token{ .type = .MINUS, .value = self.source[start..self.pos] };
+        }
+
         self.pos += 1;
         return Token{ .type = .INVALID, .value = self.source[start..self.pos] };
     }
@@ -116,7 +122,7 @@ const Parser = struct {
     pub fn parseExpression(self: *Parser, allocator: std.mem.Allocator) !*Expr {
         var left = try self.parsePrimary(allocator);
 
-        while (self.current_token.type == .PLUS) {
+        while (self.current_token.type == .PLUS or self.current_token.type == .MINUS) {
             self.advance();
             const right = try self.parsePrimary(allocator);
 
@@ -189,6 +195,7 @@ const CodeGen = struct {
 
                 switch (op_data.op) {
                     .PLUS => return c.LLVMBuildAdd(self.builder, left_val, right_val, "addtmp"),
+                    .MINUS => return c.LLVMBuildSub(self.builder, left_val, right_val, "subtmp"),
                     else => unreachable,
                 }
             },
