@@ -207,19 +207,6 @@ const CodeGen = struct {
         _ = c.LLVMBuildRet(self.builder, result);
     }
 
-    pub fn writeIRToFile(self: *CodeGen, output_path: []const u8, allocator: std.mem.Allocator) !void {
-        const ir_string = c.LLVMPrintModuleToString(self.module);
-        defer c.LLVMDisposeMessage(ir_string);
-
-        const ir_path = try std.fmt.allocPrint(allocator, "{s}.ll", .{output_path});
-        defer allocator.free(ir_path);
-
-        const file = try std.fs.cwd().createFile(ir_path, .{});
-        defer file.close();
-
-        try file.writeAll(std.mem.span(ir_string));
-    }
-
     pub fn generateObjectFile(self: *CodeGen, output_path: []const u8, allocator: std.mem.Allocator) !void {
         _ = c.LLVMInitializeAllTargetInfos();
         _ = c.LLVMInitializeAllTargets();
@@ -277,61 +264,6 @@ const CodeGen = struct {
             defer c.LLVMDisposeMessage(error_msg);
             print("error: {s}\n", .{error_msg});
             return error.ObjectFileGenerationFailed;
-        }
-    }
-
-    pub fn generateAssembly(self: *CodeGen, output_path: []const u8, allocator: std.mem.Allocator) !void {
-        _ = c.LLVMInitializeAllTargetInfos();
-        _ = c.LLVMInitializeAllTargets();
-        _ = c.LLVMInitializeAllTargetMCs();
-        _ = c.LLVMInitializeAllAsmParsers();
-        _ = c.LLVMInitializeAllAsmPrinters();
-
-        const target_triple = c.LLVMGetDefaultTargetTriple();
-        defer c.LLVMDisposeMessage(target_triple);
-
-        c.LLVMSetTarget(self.module, target_triple);
-
-        var target: c.LLVMTargetRef = undefined;
-        var error_msg: [*c]u8 = undefined;
-
-        if (c.LLVMGetTargetFromTriple(target_triple, &target, &error_msg) != 0) {
-            defer c.LLVMDisposeMessage(error_msg);
-            return error.TargetNotFound;
-        }
-
-        const target_machine = c.LLVMCreateTargetMachine(
-            target,
-            target_triple,
-            "generic",
-            "",
-            c.LLVMCodeGenLevelDefault,
-            c.LLVMRelocDefault,
-            c.LLVMCodeModelDefault,
-        );
-        defer c.LLVMDisposeTargetMachine(target_machine);
-
-        const data_layout = c.LLVMCreateTargetDataLayout(target_machine);
-        const data_layout_str = c.LLVMCopyStringRepOfTargetData(data_layout);
-        defer c.LLVMDisposeMessage(data_layout_str);
-        c.LLVMSetDataLayout(self.module, data_layout_str);
-        c.LLVMDisposeTargetData(data_layout);
-
-        const asm_path = try std.fmt.allocPrint(allocator, "{s}.s", .{output_path});
-        defer allocator.free(asm_path);
-
-        const asm_path_z = try allocator.dupeZ(u8, asm_path);
-        defer allocator.free(asm_path_z);
-
-        if (c.LLVMTargetMachineEmitToFile(
-            target_machine,
-            self.module,
-            asm_path_z.ptr,
-            c.LLVMAssemblyFile,
-            &error_msg,
-        ) != 0) {
-            defer c.LLVMDisposeMessage(error_msg);
-            return error.AssemblyFileGenerationFailed;
         }
     }
 };
