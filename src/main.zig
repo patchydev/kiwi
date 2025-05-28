@@ -123,13 +123,14 @@ const Parser = struct {
         var left = try self.parsePrimary(allocator);
 
         while (self.current_token.type == .PLUS or self.current_token.type == .MINUS) {
+            const op_type = self.current_token.type;
             self.advance();
             const right = try self.parsePrimary(allocator);
 
             const op_node = try allocator.create(Expr);
             op_node.* = Expr{ .op = .{
                 .left = left,
-                .op = .PLUS,
+                .op = op_type,
                 .right = right,
             } };
             left = op_node;
