@@ -3,3 +3,4 @@
 *.txt
 program
 zig-out/
+.zig-cache/
