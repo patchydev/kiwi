@@ -14,9 +14,16 @@ More features are planned to be added.
 
 ```bash
 zig build
-zig build run -- test.txt program
-gcc program.o -o program
+```
+
+## Running:
+
+```bash
+zig build run -- test.kw program
+zig cc program.o -o program
 ./program
 ```
 
-There must be a `test.txt` file in the root of the project with example Kiwi code.
+There must be a `test.kw` file in the root of the project with example Kiwi code.
+
+Note: the above steps can be automated by running `./run.sh`.
