@@ -1,6 +1,6 @@
 *.o
 *.out
-*.txt
+test.kw
 program
 zig-out/
 .zig-cache/

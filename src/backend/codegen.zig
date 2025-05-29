@@ -7,7 +7,7 @@ const c = @cImport({
     @cInclude("llvm-c/TargetMachine.h");
 });
 
-const CodeGen = struct {
+pub const CodeGen = struct {
     context: c.LLVMContextRef,
     module: c.LLVMModuleRef,
     builder: c.LLVMBuilderRef,

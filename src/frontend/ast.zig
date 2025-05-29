@@ -10,7 +10,7 @@ const TokenType = enum {
     INVALID,
 };
 
-const Token = struct {
+pub const Token = struct {
     type: TokenType,
     value: []const u8,
 };
@@ -20,7 +20,7 @@ const ExprType = enum {
     op,
 };
 
-const Expr = union(ExprType) {
+pub const Expr = union(ExprType) {
     number: i32,
     op: struct {
         left: *Expr,

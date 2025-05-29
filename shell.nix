@@ -5,7 +5,6 @@
 pkgs.mkShell {
   buildInputs = with pkgs; [
     llvm_18
-    gcc
     llvm_18.dev
     zig
     pkg-config

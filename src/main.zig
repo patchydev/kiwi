@@ -1,14 +1,14 @@
 const std = @import("std");
 const codegen = @import("backend/codegen.zig");
-const ast = @import("frontend/lexer.zig");
+const ast = @import("frontend/ast.zig");
 const lexer = @import("frontend/lexer.zig");
 const parser = @import("frontend/parser.zig");
 
-pub fn compileAndGenerate(_: []const u8, output_path: []const u8, allocator: std.mem.Allocator) !void {
-    //var lex = lexer.Lexer.init(source);
-    //var parse = parser.Parser.init(&lexer);
+pub fn compileAndGenerate(source: []const u8, output_path: []const u8, allocator: std.mem.Allocator) !void {
+    var lex = lexer.Lexer.init(source);
+    var parse = parser.Parser.init(&lex);
 
-    const expr = try parser.parseReturnStatement(allocator);
+    const expr = try parse.parseReturnStatement(allocator);
     defer ast.freeExpr(expr, allocator);
 
     var code = codegen.CodeGen.init("main_module");

@@ -2,7 +2,7 @@ const std = @import("std");
 const ast = @import("ast.zig");
 const lexer = @import("lexer.zig");
 
-const Parser = struct {
+pub const Parser = struct {
     lexer: *lexer.Lexer,
     current_token: ast.Token,
 
