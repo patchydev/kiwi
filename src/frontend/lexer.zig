@@ -47,6 +47,11 @@ pub const Lexer = struct {
             return ast.Token{ .type = .MINUS, .value = self.source[start..self.pos] };
         }
 
+        if (self.source[self.pos] == '*') {
+            self.pos += 1;
+            return ast.Token{ .type = .MULTIPLY, .value = self.source[start..self.pos] };
+        }
+
         self.pos += 1;
         return ast.Token{ .type = .INVALID, .value = self.source[start..self.pos] };
     }
