@@ -4,7 +4,7 @@ A toy language I'm building in Zig. Example usage:
 
 `return 1;`
 
-Or, expressions:
+Or expressions:
 
 `return 1*2+3;`
 
