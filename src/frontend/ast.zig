@@ -8,6 +8,8 @@ const TokenType = enum {
     MINUS,
     MULTIPLY,
     DIVIDE,
+    ASSIGN,
+    EQUALS,
     EOF,
     INVALID,
 };
@@ -29,6 +31,19 @@ pub const Expr = union(ExprType) {
         op: TokenType,
         right: *Expr,
     },
+};
+
+const StmtType = enum {
+    bind,
+    _return,
+};
+
+pub const Stmt = union(StmtType) {
+    bind: struct {
+        var_name: []const u8,
+        var_value: *Expr,
+    },
+    _return: *Expr,
 };
 
 pub fn freeExpr(expr: *Expr, allocator: std.mem.Allocator) void {
