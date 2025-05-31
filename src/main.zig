@@ -4,7 +4,7 @@ const ast = @import("frontend/ast.zig");
 const lexer = @import("frontend/lexer.zig");
 const parser = @import("frontend/parser.zig");
 
-pub fn compileAndGenerate(source: []const u8, output_path: []const u8, allocator: std.mem.Allocator) !void {
+fn compileAndGenerate(source: []const u8, output_path: []const u8, allocator: std.mem.Allocator) !void {
     var lex = lexer.Lexer.init(source);
     var parse = parser.Parser.init(&lex);
 
@@ -18,7 +18,7 @@ pub fn compileAndGenerate(source: []const u8, output_path: []const u8, allocator
     try code.generateObjectFile(output_path, allocator);
 }
 
-pub fn compileFile(file_path: []const u8, output_path: []const u8, allocator: std.mem.Allocator) !void {
+fn compileFile(file_path: []const u8, output_path: []const u8, allocator: std.mem.Allocator) !void {
     const file = try std.fs.cwd().openFile(file_path, .{});
     defer file.close();
 
