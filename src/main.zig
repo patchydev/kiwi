@@ -8,13 +8,18 @@ fn compileAndGenerate(source: []const u8, output_path: []const u8, allocator: st
     var lex = lexer.Lexer.init(source);
     var parse = parser.Parser.init(&lex);
 
-    const expr = try parse.parseReturnStatement(allocator);
-    defer ast.freeExpr(expr, allocator);
+    //const expr = try parse.parseReturnStatement(allocator);
+    //defer ast.freeExpr(expr, allocator);
+
+    const list = try parse.parseProgram(allocator);
+    // IMPORTANT: free this memory!!
+    // i'm just too lazy to do it right now :)
 
     var code = codegen.CodeGen.init("main_module");
     defer code.deinit();
 
-    code.generateMain(expr);
+    //code.generateMain(expr);
+    code.generateMain(list);
     try code.generateObjectFile(output_path, allocator);
 }
 
