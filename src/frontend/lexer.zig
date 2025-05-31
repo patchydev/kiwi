@@ -19,7 +19,8 @@ pub const Lexer = struct {
         const start = self.pos;
 
         if (self.pos + 6 <= self.source.len and
-            std.mem.eql(u8, self.source[self.pos .. self.pos + 6], "return"))
+            std.mem.eql(u8, self.source[self.pos .. self.pos + 6], "return") and
+            (self.pos + 6 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 6]) or self.source[self.pos + 6] == 'c'))
         {
             self.pos += 6;
             return ast.Token{ .type = .RETURN, .value = self.source[start..self.pos] };
