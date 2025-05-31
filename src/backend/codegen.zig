@@ -44,6 +44,7 @@ pub const CodeGen = struct {
                 switch (op_data.op) {
                     .PLUS => return c.LLVMBuildAdd(self.builder, left_val, right_val, "addtmp"),
                     .MINUS => return c.LLVMBuildSub(self.builder, left_val, right_val, "subtmp"),
+                    .MULTIPLY => return c.LLVMBuildMul(self.builder, left_val, right_val, "multmp"),
                     else => unreachable,
                 }
             },

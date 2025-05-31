@@ -29,9 +29,29 @@ pub const Parser = struct {
     }
 
     pub fn parseExpression(self: *Parser, allocator: std.mem.Allocator) !*ast.Expr {
-        var left = try self.parsePrimary(allocator);
+        var left = try self.parseTerm(allocator);
 
         while (self.current_token.type == .PLUS or self.current_token.type == .MINUS) {
+            const op_type = self.current_token.type;
+            self.advance();
+            const right = try self.parseTerm(allocator);
+
+            const op_node = try allocator.create(ast.Expr);
+            op_node.* = ast.Expr{ .op = .{
+                .left = left,
+                .op = op_type,
+                .right = right,
+            } };
+            left = op_node;
+        }
+
+        return left;
+    }
+
+    pub fn parseTerm(self: *Parser, allocator: std.mem.Allocator) !*ast.Expr {
+        var left = try self.parsePrimary(allocator);
+
+        while (self.current_token.type == .MULTIPLY) {
             const op_type = self.current_token.type;
             self.advance();
             const right = try self.parsePrimary(allocator);
