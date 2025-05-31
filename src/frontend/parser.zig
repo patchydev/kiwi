@@ -51,7 +51,7 @@ pub const Parser = struct {
     pub fn parseTerm(self: *Parser, allocator: std.mem.Allocator) !*ast.Expr {
         var left = try self.parsePrimary(allocator);
 
-        while (self.current_token.type == .MULTIPLY) {
+        while (self.current_token.type == .MULTIPLY or self.current_token.type == .DIVIDE) {
             const op_type = self.current_token.type;
             self.advance();
             const right = try self.parsePrimary(allocator);

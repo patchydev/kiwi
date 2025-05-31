@@ -7,6 +7,7 @@ const TokenType = enum {
     PLUS,
     MINUS,
     MULTIPLY,
+    DIVIDE,
     EOF,
     INVALID,
 };
