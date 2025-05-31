@@ -6,9 +6,16 @@ A toy language I'm building in Zig. Example usage:
 
 Or, expressions:
 
-`return 1+2+3;`
+`return 1*2+3;`
 
-More features are planned to be added.
+Currently supported in expressions:
+
+- Addition
+- Subtraction
+- Multiplication
+- Division
+
+More features are being actively worked on.
 
 ## Compilation:
 
