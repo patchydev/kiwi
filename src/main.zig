@@ -12,8 +12,13 @@ fn compileAndGenerate(source: []const u8, output_path: []const u8, allocator: st
     //defer ast.freeExpr(expr, allocator);
 
     const list = try parse.parseProgram(allocator);
-    // IMPORTANT: free this memory!!
-    // i'm just too lazy to do it right now :)
+    defer {
+        for (list.items) |item| {
+            ast.freeStmt(item, allocator);
+        }
+
+        list.deinit();
+    }
 
     var code = codegen.CodeGen.init("main_module");
     defer code.deinit();

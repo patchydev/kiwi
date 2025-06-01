@@ -68,7 +68,7 @@ pub const Parser = struct {
         return left;
     }
 
-    pub fn parseReturnStatement(self: *Parser, allocator: std.mem.Allocator) !*ast.Stmt {
+    pub fn parseReturnStatement(self: *Parser, allocator: std.mem.Allocator) !ast.Stmt {
         if (self.current_token.type != .RETURN) {
             return error.ExpectedReturn;
         }
@@ -83,14 +83,20 @@ pub const Parser = struct {
 
         //return value;
 
-        return ast.Stmt{ // just wrapping value in a statement
+        return ast.Stmt{
             ._return = value,
         };
+
+        //const stmt = try allocator.create(ast.Stmt);
+        //stmt.* = ast.Stmt{ // pointer fuckery
+        //    ._return = value,
+        //};
+        //return stmt;
     }
 
-    pub fn parseProgram(self: *Parser, allocator: std.mem.Allocator) !std.ArrayList(*ast.Stmt) {
+    pub fn parseProgram(self: *Parser, allocator: std.mem.Allocator) !std.ArrayList(ast.Stmt) {
         var list = std.ArrayList(ast.Stmt).init(allocator);
-        defer list.deinit();
+        //defer list.deinit();
 
         while (self.current_token.type != .EOF) {
             if (self.current_token.type == .RETURN) {

@@ -52,7 +52,7 @@ pub const CodeGen = struct {
         }
     }
 
-    pub fn generateMain(self: *CodeGen, list: std.ArrayList(*ast.Stmt)) void {
+    pub fn generateMain(self: *CodeGen, list: std.ArrayList(ast.Stmt)) void {
         const int_type = c.LLVMInt32TypeInContext(self.context);
         const main_type = c.LLVMFunctionType(int_type, null, 0, 0);
         const main_func = c.LLVMAddFunction(self.module, "main", main_type);
@@ -60,17 +60,17 @@ pub const CodeGen = struct {
         const entry_block = c.LLVMAppendBasicBlockInContext(self.context, main_func, "entry");
         c.LLVMPositionBuilderAtEnd(self.builder, entry_block);
 
-        var result = 0;
+        var result: ?c.LLVMValueRef = null;
         //const result = self.generateExpr(expr);
         for (list.items) |item| {
-            switch (item.*) {
+            switch (item) {
                 ._return => {
                     result = self.generateExpr(item._return);
                 },
                 .bind => unreachable,
             }
         }
-        _ = c.LLVMBuildRet(self.builder, result);
+        _ = c.LLVMBuildRet(self.builder, result.?);
     }
 
     pub fn generateObjectFile(self: *CodeGen, output_path: []const u8, allocator: std.mem.Allocator) !void {

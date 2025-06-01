@@ -57,3 +57,10 @@ pub fn freeExpr(expr: *Expr, allocator: std.mem.Allocator) void {
 
     allocator.destroy(expr);
 }
+
+pub fn freeStmt(stmt: Stmt, allocator: std.mem.Allocator) void {
+    switch (stmt) {
+        ._return => |expr| freeExpr(expr, allocator),
+        .bind => |data| freeExpr(data.var_value, allocator),
+    }
+}
