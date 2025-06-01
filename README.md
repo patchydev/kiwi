@@ -8,12 +8,13 @@ Or expressions:
 
 `return 1*2+3;`
 
-Currently supported in expressions:
+Or variables:
 
-- Addition
-- Subtraction
-- Multiplication
-- Division
+```
+let x = 1;
+let y = x + 2;
+return y;
+```
 
 More features are being actively worked on.
 
