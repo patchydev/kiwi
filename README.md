@@ -2,11 +2,15 @@
 
 A toy language I'm building in Zig. Example usage:
 
-`return 1;`
+```
+return 1;
+```
 
 Or expressions:
 
-`return 1*2+3;`
+```
+return 1*2+3;
+```
 
 Or variables:
 
@@ -17,6 +21,8 @@ return y;
 ```
 
 Note: variables are always immutable.
+
+You can find examples in the (docs directory)[./docs/examples]
 
 More features are being actively worked on.
 
