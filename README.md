@@ -22,7 +22,7 @@ return y;
 
 Note: variables are always immutable.
 
-You can find examples in the (docs directory)[./docs/examples]
+You can find examples in the [docs directory](./docs/examples)
 
 More features are being actively worked on.
 
