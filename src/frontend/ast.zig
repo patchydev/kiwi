@@ -11,6 +11,11 @@ const TokenType = enum {
     LET,
     IDENT,
     ASSIGN,
+    FN,
+    LPAREN,
+    RPAREN,
+    LCURLY,
+    RCURLY,
     EOF,
     INVALID,
 };
@@ -24,6 +29,7 @@ const ExprType = enum {
     number,
     op,
     variable,
+    fun_call,
 };
 
 pub const Expr = union(ExprType) {
@@ -38,6 +44,7 @@ pub const Expr = union(ExprType) {
 
 const StmtType = enum {
     bind,
+    fun_def,
     _return,
 };
 
