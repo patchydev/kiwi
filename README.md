@@ -16,6 +16,8 @@ let y = x + 2;
 return y;
 ```
 
+Note: variables are always immutable.
+
 More features are being actively worked on.
 
 ## Compilation:
