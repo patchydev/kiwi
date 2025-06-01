@@ -23,6 +23,7 @@ pub const Lexer = struct {
             (self.pos + 6 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 6])))
         {
             self.pos += 6;
+
             return ast.Token{ .type = .RETURN, .value = self.source[start..self.pos] };
         }
 

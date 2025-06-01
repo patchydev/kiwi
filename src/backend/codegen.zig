@@ -56,6 +56,7 @@ pub const CodeGen = struct {
             .variable => |variable| {
                 // this doesn't handle if variables aren't defined
                 // so will need to fix that at some point :3
+                std.debug.print("looking for variable '{s}'\n", .{variable});
                 return self.symbols.get(variable) orelse unreachable;
             },
         }
@@ -78,6 +79,7 @@ pub const CodeGen = struct {
                 },
                 .bind => {
                     const value = self.generateExpr(item.bind.var_value);
+                    std.debug.print("storing variable '{s}'\n", .{item.bind.var_name});
                     try self.symbols.put(item.bind.var_name, value);
                 },
             }

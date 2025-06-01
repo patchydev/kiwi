@@ -56,7 +56,9 @@ pub fn freeExpr(expr: *Expr, allocator: std.mem.Allocator) void {
             freeExpr(op_data.left, allocator);
             freeExpr(op_data.right, allocator);
         },
-        .variable => {}, // i write very safe code btw
+        .variable => |name| {
+            allocator.free(name);
+        },
     }
 
     allocator.destroy(expr);

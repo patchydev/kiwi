@@ -27,10 +27,13 @@ pub const Parser = struct {
             node.* = ast.Expr{ .number = value };
             return node;
         } else if (self.current_token.type == .IDENT) {
+            const var_name = try allocator.dupe(u8, self.current_token.value); // have to do this because of funky shit happening
+            std.debug.print("value of ident: '{s}'\n", .{self.current_token.value});
             self.advance();
 
             const node = try allocator.create(ast.Expr);
-            node.* = ast.Expr{ .variable = self.current_token.value };
+            node.* = ast.Expr{ .variable = var_name };
+            std.debug.print("created node '{s}'\n", .{node.variable});
             return node;
         } else {
             unreachable; // error handling? i hardly know her
