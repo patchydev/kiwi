@@ -11,16 +11,19 @@ pub const CodeGen = struct {
     context: c.LLVMContextRef,
     module: c.LLVMModuleRef,
     builder: c.LLVMBuilderRef,
+    symbols: std.StringHashMap(c.LLVMValueRef),
 
-    pub fn init(module_name: []const u8) CodeGen {
+    pub fn init(module_name: []const u8, allocator: std.mem.Allocator) CodeGen {
         const context = c.LLVMContextCreate();
         const module = c.LLVMModuleCreateWithNameInContext(module_name.ptr, context);
         const builder = c.LLVMCreateBuilderInContext(context);
+        const symbols = std.StringHashMap(c.LLVMValueRef).init(allocator);
 
         return CodeGen{
             .context = context,
             .module = module,
             .builder = builder,
+            .symbols = symbols,
         };
     }
 
@@ -28,6 +31,7 @@ pub const CodeGen = struct {
         c.LLVMDisposeBuilder(self.builder);
         c.LLVMDisposeModule(self.module);
         c.LLVMContextDispose(self.context);
+        self.symbols.deinit();
     }
 
     pub fn generateExpr(self: *CodeGen, expr: *ast.Expr) c.LLVMValueRef {
@@ -49,10 +53,15 @@ pub const CodeGen = struct {
                     else => unreachable,
                 }
             },
+            .variable => |variable| {
+                // this doesn't handle if variables aren't defined
+                // so will need to fix that at some point :3
+                return self.symbols.get(variable) orelse unreachable;
+            },
         }
     }
 
-    pub fn generateMain(self: *CodeGen, list: std.ArrayList(ast.Stmt)) void {
+    pub fn generateMain(self: *CodeGen, list: std.ArrayList(ast.Stmt)) !void {
         const int_type = c.LLVMInt32TypeInContext(self.context);
         const main_type = c.LLVMFunctionType(int_type, null, 0, 0);
         const main_func = c.LLVMAddFunction(self.module, "main", main_type);
@@ -67,7 +76,10 @@ pub const CodeGen = struct {
                 ._return => {
                     result = self.generateExpr(item._return);
                 },
-                .bind => unreachable,
+                .bind => {
+                    const value = self.generateExpr(item.bind.var_value);
+                    try self.symbols.put(item.bind.var_name, value);
+                },
             }
         }
         _ = c.LLVMBuildRet(self.builder, result.?);

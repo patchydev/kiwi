@@ -26,6 +26,24 @@ pub const Lexer = struct {
             return ast.Token{ .type = .RETURN, .value = self.source[start..self.pos] };
         }
 
+        if (self.pos + 3 <= self.source.len and std.mem.eql(u8, self.source[self.pos .. self.pos + 3], "let") and (self.pos + 3 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 3]))) {
+            self.pos += 3;
+            return ast.Token{ .type = .LET, .value = self.source[start..self.pos] };
+        }
+
+        if (std.ascii.isAlphabetic(self.source[self.pos])) {
+            while (self.pos < self.source.len and std.ascii.isAlphabetic(self.source[self.pos])) {
+                self.pos += 1;
+            }
+
+            return ast.Token{ .type = .IDENT, .value = self.source[start..self.pos] };
+        }
+
+        if (self.source[self.pos] == '=') {
+            self.pos += 1;
+            return ast.Token{ .type = .ASSIGN, .value = self.source[start..self.pos] };
+        }
+
         if (std.ascii.isDigit(self.source[self.pos])) {
             while (self.pos < self.source.len and std.ascii.isDigit(self.source[self.pos])) {
                 self.pos += 1;

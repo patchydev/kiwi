@@ -8,8 +8,9 @@ const TokenType = enum {
     MINUS,
     MULTIPLY,
     DIVIDE,
+    LET,
+    IDENT,
     ASSIGN,
-    EQUALS,
     EOF,
     INVALID,
 };
@@ -22,6 +23,7 @@ pub const Token = struct {
 const ExprType = enum {
     number,
     op,
+    variable,
 };
 
 pub const Expr = union(ExprType) {
@@ -31,6 +33,7 @@ pub const Expr = union(ExprType) {
         op: TokenType,
         right: *Expr,
     },
+    variable: []const u8,
 };
 
 const StmtType = enum {
@@ -53,6 +56,7 @@ pub fn freeExpr(expr: *Expr, allocator: std.mem.Allocator) void {
             freeExpr(op_data.left, allocator);
             freeExpr(op_data.right, allocator);
         },
+        .variable => {}, // i write very safe code btw
     }
 
     allocator.destroy(expr);

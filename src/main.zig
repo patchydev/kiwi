@@ -20,11 +20,11 @@ fn compileAndGenerate(source: []const u8, output_path: []const u8, allocator: st
         list.deinit();
     }
 
-    var code = codegen.CodeGen.init("main_module");
+    var code = codegen.CodeGen.init("main_module", allocator);
     defer code.deinit();
 
     //code.generateMain(expr);
-    code.generateMain(list);
+    try code.generateMain(list);
     try code.generateObjectFile(output_path, allocator);
 }
 
