@@ -153,6 +153,14 @@ pub const Parser = struct {
         return list;
     }
 
+    pub fn parseType(self: *Parser) !ast.Type {
+        if (self.current_token.type == .I32) {
+            return ast.Type.int32;
+        } else {
+            unreachable;
+        }
+    }
+
     fn advance(self: *Parser) void {
         self.current_token = self.lexer.nextToken();
     }
