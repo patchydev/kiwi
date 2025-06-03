@@ -16,6 +16,7 @@ const TokenType = enum {
     RPAREN,
     LCURLY,
     RCURLY,
+    COMMA,
     EOF,
     INVALID,
 };
@@ -39,7 +40,10 @@ pub const Expr = union(ExprType) {
         op: TokenType,
         right: *Expr,
     },
-    variable: []const u8,
+    variable: struct {
+        fun_name: []const u8,
+        fun_args: std.ArrayList(*Expr),
+    },
 };
 
 const StmtType = enum {
@@ -52,6 +56,11 @@ pub const Stmt = union(StmtType) {
     bind: struct {
         var_name: []const u8,
         var_value: *Expr,
+    },
+    fun_def: struct {
+        fun_name: []const u8,
+        fun_args: std.ArrayList([]const u8),
+        fun_body: std.ArrayList(Stmt),
     },
     _return: *Expr,
 };

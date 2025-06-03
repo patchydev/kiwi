@@ -31,6 +31,10 @@ pub const Lexer = struct {
             self.pos += 3;
             return ast.Token{ .type = .LET, .value = self.source[start..self.pos] };
         }
+        if (self.pos + 2 <= self.source.len and std.mem.eql(u8, self.source[self.pos .. self.pos + 2], "fn") and (self.pos + 2 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 2]))) {
+            self.pos += 2;
+            return ast.Token{ .type = .FN, .value = self.source[start..self.pos] };
+        }
 
         if (std.ascii.isAlphabetic(self.source[self.pos])) {
             while (self.pos < self.source.len and std.ascii.isAlphabetic(self.source[self.pos])) {
@@ -74,6 +78,26 @@ pub const Lexer = struct {
         if (self.source[self.pos] == '/') {
             self.pos += 1;
             return ast.Token{ .type = .DIVIDE, .value = self.source[start..self.pos] };
+        }
+        if (self.source[self.pos] == '(') {
+            self.pos += 1;
+            return ast.Token{ .type = .RPAREN, .value = self.source[start..self.pos] };
+        }
+        if (self.source[self.pos] == ')') {
+            self.pos += 1;
+            return ast.Token{ .type = .LPAREN, .value = self.source[start..self.pos] };
+        }
+        if (self.source[self.pos] == '{') {
+            self.pos += 1;
+            return ast.Token{ .type = .RCURLY, .value = self.source[start..self.pos] };
+        }
+        if (self.source[self.pos] == '}') {
+            self.pos += 1;
+            return ast.Token{ .type = .LCURLY, .value = self.source[start..self.pos] };
+        }
+        if (self.source[self.pos] == ',') {
+            self.pos += 1;
+            return ast.Token{ .type = .COMMA, .value = self.source[start..self.pos] };
         }
 
         self.pos += 1;
