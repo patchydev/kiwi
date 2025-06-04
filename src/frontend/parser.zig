@@ -161,6 +161,28 @@ pub const Parser = struct {
         }
     }
 
+    pub fn parseParameter(self: *Parser, allocator: std.mem.Allocator) !ast.Parameter {
+        if (self.current_token.type != .IDENT) {
+            return error.ExpectedIdentifier;
+        }
+
+        const name = try allocator.dupe(u8, self.current_token.value);
+        self.advance();
+
+        if (self.current_token.type != .COLON) {
+            return error.ExpectedColon;
+        }
+        self.advance();
+
+        const param_type = try self.parseType();
+        self.advance();
+
+        return ast.Parameter{
+            .name = name,
+            .type = param_type,
+        };
+    }
+
     fn advance(self: *Parser) void {
         self.current_token = self.lexer.nextToken();
     }
