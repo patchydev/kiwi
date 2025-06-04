@@ -175,12 +175,75 @@ pub const Parser = struct {
         self.advance();
 
         const param_type = try self.parseType();
-        self.advance();
+        //self.advance();
+        // i think we should consume the comma in parseFunctionDef instead
 
         return ast.Parameter{
             .name = name,
             .type = param_type,
         };
+    }
+
+    pub fn parseFunctionDef(self: *Parser, allocator: std.mem.Allocator) !ast.Stmt {
+        if (self.current_token.type != .FN) {
+            return error.ExpectedFnDef;
+        }
+        self.advance();
+
+        if (self.current_token.type != .IDENT) {
+            return error.ExpectedFnName;
+        }
+
+        const fn_name = try allocator.dupe(u8, self.current_token.value);
+        self.advance();
+
+        if (self.current_token.type != .RPAREN) {
+            return error.ExpectedParen;
+        }
+        self.advance();
+
+        var param_list = std.ArrayList(ast.Parameter).init(allocator);
+        while (self.current_token.type != .LPAREN) {
+            self.advance();
+            param_list.append(try self.parseParameter(allocator));
+            //self.advance();
+        }
+        self.advance(); // i know this doesn't actually check for the existence of lparen, but...
+
+        if (self.current_token.type != .ARROW) {
+            return error.ExpectedArrow;
+        }
+        self.advance();
+
+        const return_type = try self.parseType();
+        self.advance();
+
+        if (self.current_token.type != .LCURLY) {
+            return error.ExpectedFnBody;
+        }
+        self.advance();
+
+        var fn_body = std.ArrayList(ast.Stmt).init(allocator);
+
+        while (self.current_token.type != .RCURLY) {
+            self.advance();
+
+            if (self.current_token.type == .LET) {
+                fn_body.append(try self.parseLetStatement(allocator));
+            } else if (self.current_token.type == .RETURN) {
+                fn_body.append(try self.parseReturnStatement(allocator));
+                break;
+            } else {
+                unreachable; // i love it
+            }
+        }
+
+        return ast.Stmt{ .fun_def = .{
+            .fun_name = fn_name,
+            .fun_params = param_list,
+            .fun_body = fn_body,
+            .fun_type = return_type,
+        } };
     }
 
     fn advance(self: *Parser) void {
