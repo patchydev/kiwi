@@ -1,3 +1,4 @@
+$$
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
@@ -26,7 +27,7 @@ showstringspaces=false
 program := statement\*
 
 statement := variable_declaration
-| function_declaration  
+| function_declaration
  | return_statement
 
 variable_declaration := "let" identifier ":" type "=" expression ";"
@@ -83,3 +84,4 @@ return a + b;
 \end{itemize}
 
 \end{document}
+$$
