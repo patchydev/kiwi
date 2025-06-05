@@ -12,10 +12,10 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    export LLVM_CONFIG=${pkgs.llvm_18.dev}/bin/llvm-config
-    export LLVM_SYS_180_PREFIX=${pkgs.llvm_18.dev}
-    export PKG_CONFIG_PATH="${pkgs.llvm_18.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
-    export SHELL=${pkgs.zsh}/bin/zsh
+    LLVM_CONFIG=${pkgs.llvm_18.dev}/bin/llvm-config
+    LLVM_SYS_180_PREFIX=${pkgs.llvm_18.dev}
+    PKG_CONFIG_PATH="${pkgs.llvm_18.dev}/lib/pkgconfig:$PKG_CONFIG_PATH"
+    SHELL=${pkgs.zsh}/bin/zsh
     zsh
   '';
 }
