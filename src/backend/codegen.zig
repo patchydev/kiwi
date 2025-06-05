@@ -12,18 +12,24 @@ pub const CodeGen = struct {
     module: c.LLVMModuleRef,
     builder: c.LLVMBuilderRef,
     symbols: std.StringHashMap(c.LLVMValueRef),
+    functions: std.StringHashMap(c.LLVMValueRef),
+    local = ?std.StringHashMap(c.LLVMValueRef),
 
     pub fn init(module_name: []const u8, allocator: std.mem.Allocator) CodeGen {
         const context = c.LLVMContextCreate();
         const module = c.LLVMModuleCreateWithNameInContext(module_name.ptr, context);
         const builder = c.LLVMCreateBuilderInContext(context);
         const symbols = std.StringHashMap(c.LLVMValueRef).init(allocator);
+        const functions = std.StringHashMap(c.LLVMValueRef).init(allocator);
+        const local = null;
 
         return CodeGen{
             .context = context,
             .module = module,
             .builder = builder,
             .symbols = symbols,
+            .functions = functions,
+            .local = local,
         };
     }
 
@@ -32,6 +38,18 @@ pub const CodeGen = struct {
         c.LLVMDisposeModule(self.module);
         c.LLVMContextDispose(self.context);
         self.symbols.deinit();
+        self.functions.deinit();
+        if (self.local) |*locals| {
+            locals.deinit();
+        }
+    }
+
+    pub fn genType(self: *CodeGen, _type: ast.Type) c.LLVMValueRef {
+        switch (_type) {
+            .int32 => {
+                return c.LLVMInt32TypeInContext(self.context);
+            },
+        }
     }
 
     pub fn generateExpr(self: *CodeGen, expr: *ast.Expr) c.LLVMValueRef {
@@ -59,6 +77,9 @@ pub const CodeGen = struct {
                 std.debug.print("looking for variable '{s}'\n", .{variable});
                 return self.symbols.get(variable) orelse unreachable;
             },
+            else => {
+                std.debug.print("function call", .{});
+            },
         }
     }
 
@@ -81,6 +102,9 @@ pub const CodeGen = struct {
                     const value = self.generateExpr(item.bind.var_value);
                     std.debug.print("storing variable '{s}'\n", .{item.bind.var_name});
                     try self.symbols.put(item.bind.var_name, value);
+                },
+                else => {
+                    std.debug.print("function def", .{});
                 },
             }
         }

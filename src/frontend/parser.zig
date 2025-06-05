@@ -221,7 +221,7 @@ pub const Parser = struct {
         defer param_list.deinit();
         while (self.current_token.type != .LPAREN) {
             self.advance();
-            param_list.append(try self.parseParameter(allocator));
+            try param_list.append(try self.parseParameter(allocator));
             //self.advance();
         }
         self.advance(); // i know this doesn't actually check for the existence of lparen, but...
@@ -246,9 +246,9 @@ pub const Parser = struct {
             self.advance();
 
             if (self.current_token.type == .LET) {
-                fn_body.append(try self.parseLetStatement(allocator));
+                try fn_body.append(try self.parseLetStatement(allocator));
             } else if (self.current_token.type == .RETURN) {
-                fn_body.append(try self.parseReturnStatement(allocator));
+                try fn_body.append(try self.parseReturnStatement(allocator));
                 break;
             } else {
                 unreachable; // i love it
@@ -263,20 +263,24 @@ pub const Parser = struct {
         } };
     }
 
-    fn parseFunctionCall(self: *Parser, allocator: std.mem.Allocator, name: []const u8) !ast.Expr {
+    fn parseFunctionCall(self: *Parser, allocator: std.mem.Allocator, name: []const u8) !*ast.Expr {
         // theoretically, parseFunctionCall should start after the (, and only parse the args/)
-        var param_list = std.ArrayList(ast.Expr).init(allocator);
+        var param_list = std.ArrayList(ast.Parameter).init(allocator);
         defer param_list.deinit();
         while (self.current_token.type != .LPAREN) {
             self.advance();
-            param_list.append(try parseParameter(allocator));
+            try param_list.append(try self.parseParameter(allocator));
         }
         self.advance();
 
-        return ast.Expr{ .fun_call = .{
+        const fun = try allocator.create(ast.Expr);
+
+        fun.* = ast.Expr{ .fun_call = .{
             .fun_name = name,
             .fun_args = param_list,
         } };
+
+        return fun;
     }
 
     fn advance(self: *Parser) void {
