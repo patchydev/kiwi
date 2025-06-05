@@ -51,7 +51,8 @@ pub const Expr = union(ExprType) {
         op: TokenType,
         right: *Expr,
     },
-    variable: struct {
+    variable: []const u8,
+    fun_call: struct {
         fun_name: []const u8,
         fun_args: std.ArrayList(*Expr),
     },

@@ -31,10 +31,14 @@ pub const Parser = struct {
             std.debug.print("value of ident: '{s}'\n", .{self.current_token.value});
             self.advance();
 
-            const node = try allocator.create(ast.Expr);
-            node.* = ast.Expr{ .variable = var_name };
-            std.debug.print("created node '{s}'\n", .{node.variable});
-            return node;
+            if (self.current_token.type == .LPAREN) {
+                return try self.parseFunctionCall(allocator, var_name);
+            } else {
+                const node = try allocator.create(ast.Expr);
+                node.* = ast.Expr{ .variable = var_name };
+                std.debug.print("created node '{s}'\n", .{node.variable});
+                return node;
+            }
         } else {
             unreachable; // error handling? i hardly know her
         }
@@ -145,6 +149,8 @@ pub const Parser = struct {
                 try list.append(try self.parseReturnStatement(allocator));
             } else if (self.current_token.type == .LET) {
                 try list.append(try self.parseLetStatement(allocator));
+            } else if (self.current_token.type == .FN) {
+                try list.append(try self.parseFunctionDef(allocator));
             } else {
                 unreachable; // lol
             }
@@ -203,6 +209,7 @@ pub const Parser = struct {
         self.advance();
 
         var param_list = std.ArrayList(ast.Parameter).init(allocator);
+        defer param_list.deinit();
         while (self.current_token.type != .LPAREN) {
             self.advance();
             param_list.append(try self.parseParameter(allocator));
@@ -224,6 +231,7 @@ pub const Parser = struct {
         self.advance();
 
         var fn_body = std.ArrayList(ast.Stmt).init(allocator);
+        defer fn_body.deinit();
 
         while (self.current_token.type != .RCURLY) {
             self.advance();
@@ -243,6 +251,22 @@ pub const Parser = struct {
             .fun_params = param_list,
             .fun_body = fn_body,
             .fun_type = return_type,
+        } };
+    }
+
+    fn parseFunctionCall(self: *Parser, allocator: std.mem.Allocator, name: []const u8) !ast.Expr {
+        // theoretically, parseFunctionCall should start after the (, and only parse the args/)
+        var param_list = std.ArrayList(ast.Expr).init(allocator);
+        defer param_list.deinit();
+        while (self.current_token.type != .LPAREN) {
+            self.advance();
+            param_list.append(try parseParameter(allocator));
+        }
+        self.advance();
+
+        return ast.Expr{ .fun_call = .{
+            .fun_name = name,
+            .fun_args = param_list,
         } };
     }
 
