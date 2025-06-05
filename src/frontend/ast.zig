@@ -67,7 +67,7 @@ const StmtType = enum {
 pub const Stmt = union(StmtType) {
     bind: struct {
         var_name: []const u8,
-        var_type: ?Type,
+        var_type: Type,
         var_value: *Expr,
     },
     fun_def: struct {

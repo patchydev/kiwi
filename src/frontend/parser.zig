@@ -96,6 +96,14 @@ pub const Parser = struct {
         const name = self.current_token.value;
         self.advance();
 
+        if (self.current_token.type != .COLON) {
+            return error.ExpectedColon;
+        }
+        self.advance();
+
+        const var_type = try self.parseType();
+        self.advance();
+
         if (self.current_token.type != .ASSIGN) {
             return error.ExpectedAssignmentOperator;
         }
@@ -110,6 +118,7 @@ pub const Parser = struct {
 
         return ast.Stmt{ .bind = .{
             .var_name = name,
+            .var_type = var_type,
             .var_value = value,
         } };
     }
