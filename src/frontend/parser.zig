@@ -226,28 +226,37 @@ pub const Parser = struct {
 
     pub fn parseFunctionDef(self: *Parser, allocator: std.mem.Allocator) !ast.Stmt {
         if (self.current_token.type != .FN) {
-            return error.ExpectedFnDef;
+            return error.ExpectedFn;
         }
         self.advance();
 
         if (self.current_token.type != .IDENT) {
-            return error.ExpectedFnName;
+            return error.ExpectedIdentifier;
         }
 
         const fn_name = try allocator.dupe(u8, self.current_token.value);
         self.advance();
 
         if (self.current_token.type != .LPAREN) {
-            return error.ExpectedParen;
+            return error.ExpectedLParen;
         }
         self.advance();
 
         var param_list = std.ArrayList(ast.Parameter).init(allocator);
         //defer param_list.deinit();
-        while (self.current_token.type != .RPAREN) {
-            self.advance();
-            try param_list.append(try self.parseParameter(allocator));
-            //self.advance();
+        if (self.current_token.type != .RPAREN) {
+            while (true) {
+                try param_list.append(try self.parseParameter(allocator));
+                self.advance();
+
+                if (self.current_token.type == .COMMA) {
+                    self.advance();
+                } else if (self.current_token.type == .RPAREN) {
+                    break;
+                } else {
+                    return error.ExpectedCommaOrParen;
+                }
+            }
         }
         self.advance(); // i know this doesn't actually check for the existence of lparen, but...
 
@@ -260,7 +269,7 @@ pub const Parser = struct {
         self.advance();
 
         if (self.current_token.type != .LCURLY) {
-            return error.ExpectedFnBody;
+            return error.ExpectedLBrace;
         }
         self.advance();
 

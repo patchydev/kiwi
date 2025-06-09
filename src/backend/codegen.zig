@@ -85,6 +85,13 @@ pub const CodeGen = struct {
         std.debug.print("Initializing local variables map\n", .{});
         self.local = std.StringHashMap(c.LLVMValueRef).init(allocator);
 
+        std.debug.print("adding function parameters to local scope\n", .{});
+        for (fun.fun_params.items, 0..) |p, i| {
+            const llvm_param = c.LLVMGetParam(func_val, @intCast(i));
+            try self.local.?.put(p.name, llvm_param);
+            std.debug.print("added parameter '{s}' to local scope\n", .{p.name});
+        }
+
         var ret_value: ?c.LLVMValueRef = null;
 
         std.debug.print("Processing function body with {} statements\n", .{fun.fun_body.items.len});
