@@ -118,15 +118,39 @@ pub const CodeGen = struct {
                 // this doesn't handle if variables aren't defined
                 // so will need to fix that at some point :3
                 std.debug.print("looking for variable '{s}'\n", .{variable});
+                if (self.locals) |local| {
+                    if (local.get(variable)) |val| {
+                        return val;
+                    }
+                }
                 return self.symbols.get(variable) orelse unreachable;
             },
-            else => {
-                std.debug.print("function call", .{});
+            .fun_call => |fun| {
+                const func = self.functions.get(fun.fun_name) orelse unreachable;
+                var args = std.ArrayList(c.LLVMValueRef).init(std.heap.page_allocator);
+
+                for (fun.fun_args.items) |arg| {
+                    try args.append(self.generateExpr(arg));
+                }
+
+                return c.LLVMBuildCall2(self.builder, c.LLVMGetElementType(c.LLVMTypeOf(func)), func, args.items.ptr, @intCast(args.items.len), "calltmp");
             },
+            //else => {
+            //    std.debug.print("function call", .{});
+            //},
         }
     }
 
-    pub fn generateMain(self: *CodeGen, list: std.ArrayList(ast.Stmt)) !void {
+    pub fn generateMain(self: *CodeGen, list: std.ArrayList(ast.Stmt), allocator: std.mem.Allocator) !void {
+        for (list.items) |item| {
+            switch (item) {
+                .fun_def => |func_def| {
+                    try self.genFnDef(func_def, allocator);
+                },
+                else => {},
+            }
+        }
+
         const int_type = c.LLVMInt32TypeInContext(self.context);
         const main_type = c.LLVMFunctionType(int_type, null, 0, 0);
         const main_func = c.LLVMAddFunction(self.module, "main", main_type);
@@ -146,9 +170,10 @@ pub const CodeGen = struct {
                     std.debug.print("storing variable '{s}'\n", .{item.bind.var_name});
                     try self.symbols.put(item.bind.var_name, value);
                 },
-                else => {
-                    std.debug.print("function def", .{});
-                },
+                .fun_def => {},
+                //else => {
+                //    std.debug.print("function def", .{});
+                //},
             }
         }
         _ = c.LLVMBuildRet(self.builder, result.?);
