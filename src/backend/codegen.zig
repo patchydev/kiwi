@@ -52,6 +52,49 @@ pub const CodeGen = struct {
         }
     }
 
+    pub fn genFnDef(self: *CodeGen, fun: ast.Stmt.fun_def, allocator: std.mem.Allocator) !void {
+        var params = try allocator.alloc(c.LLVMTypeREf, fun.fun_params.items.len);
+        defer params.deinit();
+
+        for (fun.fun_params.items, 0..) |p, i| {
+            params[i] = self.genType(p.type);
+        }
+
+        const ret_type = self.genType(fun.fun_type);
+        const func_type = c.LLVMFunctionType(ret_type, params.ptr, @intCast(params.len), 0);
+
+        const func_nameZ = try allocator.dupeZ(u8, fun.fun_name);
+        defer allocator.free(func_nameZ);
+
+        const func_val = c.LLVMAddFunction(self.module, func_nameZ.ptr, func_type);
+        try self.functions.put(fun.fun_name, func_val);
+
+        const entry_block = c.LLVMAppendBasicBlockInContext(self.context, func_val, "entry");
+        c.LLVMPositionBuilderAtEnd(self.builder, entry_block);
+
+        self.locals = std.StringHashMap(c.LLVMValueRef).init(allocator);
+
+        var ret_value: ?c.LLVMValueRef = null;
+
+        for (fun.fun_body.items) |stmt| {
+            switch (stmt) {
+                ._return => |expr| {
+                    ret_value = self.generateExpr(expr);
+                },
+                .bind => |bind_d| {
+                    const value = self.generateExpr(bind_d.var_value);
+                    try self.locals.?.put(bind_d.var_name, value);
+                },
+                .fun_def => return error.NoNestedFunctions,
+            }
+        }
+
+        _ = c.LLVMBuildRet(self.builder, ret_value);
+
+        self.locals.?.deinit();
+        self.locals = null;
+    }
+
     pub fn generateExpr(self: *CodeGen, expr: *ast.Expr) c.LLVMValueRef {
         const int_type = c.LLVMInt32TypeInContext(self.context);
 
