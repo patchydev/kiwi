@@ -40,6 +40,7 @@ Note: the above steps can be automated by running `./run.sh`.
 
 ### 🔄 In Development
 
+- [ ] Lambda Expressions
 - [ ] Conditional statements
 - [ ] Booleans
 
