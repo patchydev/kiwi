@@ -13,7 +13,7 @@ pub const CodeGen = struct {
     builder: c.LLVMBuilderRef,
     symbols: std.StringHashMap(c.LLVMValueRef),
     functions: std.StringHashMap(c.LLVMValueRef),
-    local = ?std.StringHashMap(c.LLVMValueRef),
+    local: ?std.StringHashMap(c.LLVMValueRef),
 
     pub fn init(module_name: []const u8, allocator: std.mem.Allocator) CodeGen {
         const context = c.LLVMContextCreate();
@@ -44,7 +44,7 @@ pub const CodeGen = struct {
         }
     }
 
-    pub fn genType(self: *CodeGen, _type: ast.Type) c.LLVMValueRef {
+    pub fn genType(self: *CodeGen, _type: ast.Type) c.LLVMTypeRef {
         switch (_type) {
             .int32 => {
                 return c.LLVMInt32TypeInContext(self.context);
@@ -52,9 +52,9 @@ pub const CodeGen = struct {
         }
     }
 
-    pub fn genFnDef(self: *CodeGen, fun: ast.Stmt.fun_def, allocator: std.mem.Allocator) !void {
-        var params = try allocator.alloc(c.LLVMTypeREf, fun.fun_params.items.len);
-        defer params.deinit();
+    pub fn genFnDef(self: *CodeGen, fun: ast.FnDef, allocator: std.mem.Allocator) !void {
+        var params = try allocator.alloc(c.LLVMTypeRef, fun.fun_params.items.len);
+        defer allocator.free(params);
 
         for (fun.fun_params.items, 0..) |p, i| {
             params[i] = self.genType(p.type);
@@ -72,30 +72,30 @@ pub const CodeGen = struct {
         const entry_block = c.LLVMAppendBasicBlockInContext(self.context, func_val, "entry");
         c.LLVMPositionBuilderAtEnd(self.builder, entry_block);
 
-        self.locals = std.StringHashMap(c.LLVMValueRef).init(allocator);
+        self.local = std.StringHashMap(c.LLVMValueRef).init(allocator);
 
         var ret_value: ?c.LLVMValueRef = null;
 
         for (fun.fun_body.items) |stmt| {
             switch (stmt) {
                 ._return => |expr| {
-                    ret_value = self.generateExpr(expr);
+                    ret_value = try self.generateExpr(expr);
                 },
                 .bind => |bind_d| {
-                    const value = self.generateExpr(bind_d.var_value);
-                    try self.locals.?.put(bind_d.var_name, value);
+                    const value = try self.generateExpr(bind_d.var_value);
+                    try self.local.?.put(bind_d.var_name, value);
                 },
                 .fun_def => return error.NoNestedFunctions,
             }
         }
 
-        _ = c.LLVMBuildRet(self.builder, ret_value);
+        _ = c.LLVMBuildRet(self.builder, ret_value.?);
 
-        self.locals.?.deinit();
-        self.locals = null;
+        self.local.?.deinit();
+        self.local = null;
     }
 
-    pub fn generateExpr(self: *CodeGen, expr: *ast.Expr) c.LLVMValueRef {
+    pub fn generateExpr(self: *CodeGen, expr: *ast.Expr) !c.LLVMValueRef {
         const int_type = c.LLVMInt32TypeInContext(self.context);
 
         switch (expr.*) {
@@ -103,8 +103,8 @@ pub const CodeGen = struct {
                 return c.LLVMConstInt(int_type, @intCast(n), 0);
             },
             .op => |op_data| {
-                const left_val = self.generateExpr(op_data.left);
-                const right_val = self.generateExpr(op_data.right);
+                const left_val = try self.generateExpr(op_data.left);
+                const right_val = try self.generateExpr(op_data.right);
 
                 switch (op_data.op) {
                     .PLUS => return c.LLVMBuildAdd(self.builder, left_val, right_val, "addtmp"),
@@ -118,8 +118,8 @@ pub const CodeGen = struct {
                 // this doesn't handle if variables aren't defined
                 // so will need to fix that at some point :3
                 std.debug.print("looking for variable '{s}'\n", .{variable});
-                if (self.locals) |local| {
-                    if (local.get(variable)) |val| {
+                if (self.local) |l| {
+                    if (l.get(variable)) |val| {
                         return val;
                     }
                 }
@@ -130,7 +130,7 @@ pub const CodeGen = struct {
                 var args = std.ArrayList(c.LLVMValueRef).init(std.heap.page_allocator);
 
                 for (fun.fun_args.items) |arg| {
-                    try args.append(self.generateExpr(arg));
+                    try args.append(try self.generateExpr(arg));
                 }
 
                 return c.LLVMBuildCall2(self.builder, c.LLVMGetElementType(c.LLVMTypeOf(func)), func, args.items.ptr, @intCast(args.items.len), "calltmp");
@@ -163,10 +163,10 @@ pub const CodeGen = struct {
         for (list.items) |item| {
             switch (item) {
                 ._return => {
-                    result = self.generateExpr(item._return);
+                    result = try self.generateExpr(item._return);
                 },
                 .bind => {
-                    const value = self.generateExpr(item.bind.var_value);
+                    const value = try self.generateExpr(item.bind.var_value);
                     std.debug.print("storing variable '{s}'\n", .{item.bind.var_name});
                     try self.symbols.put(item.bind.var_name, value);
                 },

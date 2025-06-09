@@ -54,8 +54,15 @@ pub const Expr = union(ExprType) {
     variable: []const u8,
     fun_call: struct {
         fun_name: []const u8,
-        fun_args: std.ArrayList(Parameter),
+        fun_args: std.ArrayList(*Expr),
     },
+};
+
+pub const FnDef = struct {
+    fun_name: []const u8,
+    fun_params: std.ArrayList(Parameter),
+    fun_type: Type,
+    fun_body: std.ArrayList(Stmt),
 };
 
 const StmtType = enum {
@@ -70,12 +77,7 @@ pub const Stmt = union(StmtType) {
         var_type: Type,
         var_value: *Expr,
     },
-    fun_def: struct {
-        fun_name: []const u8,
-        fun_params: std.ArrayList(Parameter),
-        fun_type: Type,
-        fun_body: std.ArrayList(Stmt),
-    },
+    fun_def: FnDef,
     _return: *Expr,
 };
 

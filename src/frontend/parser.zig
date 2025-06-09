@@ -2,6 +2,29 @@ const std = @import("std");
 const ast = @import("ast.zig");
 const lexer = @import("lexer.zig");
 
+const ParseError = error{
+    ExpectedNumber,
+    ExpectedIdentifier,
+    ExpectedSemicolon,
+    ExpectedLParen,
+    ExpectedRParen,
+    ExpectedCommaOrParen,
+    ExpectedReturn,
+    ExpectedLet,
+    ExpectedAssignmentOperator,
+    ExpectedFn,
+    ExpectedColon,
+    ExpectedArrow,
+    ExpectedType,
+    ExpectedFunctionName,
+    ExpectedLBrace,
+    ExpectedRBrace,
+    UnexpectedToken,
+    OutOfMemory,
+    Overflow,
+    InvalidCharacter,
+};
+
 pub const Parser = struct {
     lexer: *lexer.Lexer,
     current_token: ast.Token,
@@ -15,7 +38,7 @@ pub const Parser = struct {
         return parser;
     }
 
-    pub fn parsePrimary(self: *Parser, allocator: std.mem.Allocator) !*ast.Expr {
+    pub fn parsePrimary(self: *Parser, allocator: std.mem.Allocator) ParseError!*ast.Expr {
         if (self.current_token.type != .NUMBER and self.current_token.type != .IDENT) {
             return error.ExpectedNumber;
         }
@@ -44,7 +67,7 @@ pub const Parser = struct {
         }
     }
 
-    pub fn parseExpression(self: *Parser, allocator: std.mem.Allocator) !*ast.Expr {
+    pub fn parseExpression(self: *Parser, allocator: std.mem.Allocator) ParseError!*ast.Expr {
         var left = try self.parseTerm(allocator);
 
         while (self.current_token.type == .PLUS or self.current_token.type == .MINUS) {
@@ -64,7 +87,7 @@ pub const Parser = struct {
         return left;
     }
 
-    pub fn parseTerm(self: *Parser, allocator: std.mem.Allocator) !*ast.Expr {
+    pub fn parseTerm(self: *Parser, allocator: std.mem.Allocator) ParseError!*ast.Expr {
         var left = try self.parsePrimary(allocator);
 
         while (self.current_token.type == .MULTIPLY or self.current_token.type == .DIVIDE) {
@@ -263,13 +286,20 @@ pub const Parser = struct {
         } };
     }
 
-    fn parseFunctionCall(self: *Parser, allocator: std.mem.Allocator, name: []const u8) !*ast.Expr {
+    fn parseFunctionCall(self: *Parser, allocator: std.mem.Allocator, name: []const u8) ParseError!*ast.Expr {
         // theoretically, parseFunctionCall should start after the (, and only parse the args/)
-        var param_list = std.ArrayList(ast.Parameter).init(allocator);
+        var param_list = std.ArrayList(*ast.Expr).init(allocator);
         defer param_list.deinit();
-        while (self.current_token.type != .LPAREN) {
+        while (self.current_token.type != .RPAREN) {
             self.advance();
-            try param_list.append(try self.parseParameter(allocator));
+            const arg = try self.parseExpression(allocator);
+            try param_list.append(arg);
+
+            if (self.current_token.type == .COMMA) {
+                self.advance();
+            } else if (self.current_token.type != .RPAREN) {
+                return error.ExpectedCommaOrParen;
+            }
         }
         self.advance();
 

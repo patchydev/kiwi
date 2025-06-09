@@ -24,7 +24,7 @@ fn compileAndGenerate(source: []const u8, output_path: []const u8, allocator: st
     defer code.deinit();
 
     //code.generateMain(expr);
-    try code.generateMain(list);
+    try code.generateMain(list, allocator);
     try code.generateObjectFile(output_path, allocator);
 }
 
