@@ -89,23 +89,27 @@ pub const Lexer = struct {
         }
         if (self.source[self.pos] == '(') {
             self.pos += 1;
-            return ast.Token{ .type = .RPAREN, .value = self.source[start..self.pos] };
+            return ast.Token{ .type = .LPAREN, .value = self.source[start..self.pos] };
         }
         if (self.source[self.pos] == ')') {
             self.pos += 1;
-            return ast.Token{ .type = .LPAREN, .value = self.source[start..self.pos] };
+            return ast.Token{ .type = .RPAREN, .value = self.source[start..self.pos] };
         }
         if (self.source[self.pos] == '{') {
             self.pos += 1;
-            return ast.Token{ .type = .RCURLY, .value = self.source[start..self.pos] };
+            return ast.Token{ .type = .LCURLY, .value = self.source[start..self.pos] };
         }
         if (self.source[self.pos] == '}') {
             self.pos += 1;
-            return ast.Token{ .type = .LCURLY, .value = self.source[start..self.pos] };
+            return ast.Token{ .type = .RCURLY, .value = self.source[start..self.pos] };
         }
         if (self.source[self.pos] == ',') {
             self.pos += 1;
             return ast.Token{ .type = .COMMA, .value = self.source[start..self.pos] };
+        }
+        if (self.source[self.pos] == ':') {
+            self.pos += 1;
+            return ast.Token{ .type = .COLON, .value = self.source[start..self.pos] };
         }
 
         self.pos += 1;

@@ -96,8 +96,15 @@ pub fn freeExpr(expr: *Expr, allocator: std.mem.Allocator) void {
         .variable => |name| {
             allocator.free(name);
         },
-        else => std.debug.print("free function call", .{}),
-        // need to add things here for function call
+        .fun_call => |data| {
+            allocator.free(data.fun_name);
+
+            for (data.fun_args.items) |arg| {
+                freeExpr(arg, allocator);
+            }
+
+            data.fun_args.deinit();
+        },
     }
 
     allocator.destroy(expr);
@@ -106,8 +113,22 @@ pub fn freeExpr(expr: *Expr, allocator: std.mem.Allocator) void {
 pub fn freeStmt(stmt: Stmt, allocator: std.mem.Allocator) void {
     switch (stmt) {
         ._return => |expr| freeExpr(expr, allocator),
-        .bind => |data| freeExpr(data.var_value, allocator),
-        else => std.debug.print("free function def", .{}),
-        // need to add smth here for function definition
+        .bind => |data| {
+            allocator.free(data.var_name);
+            freeExpr(data.var_value, allocator);
+        },
+        .fun_def => |def| {
+            allocator.free(def.fun_name);
+
+            for (def.fun_params.items) |param| {
+                allocator.free(param.name);
+            }
+            def.fun_params.deinit();
+
+            for (def.fun_body.items) |stmt_b| {
+                freeStmt(stmt_b, allocator);
+            }
+            def.fun_body.deinit();
+        },
     }
 }

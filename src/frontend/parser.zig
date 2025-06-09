@@ -116,7 +116,7 @@ pub const Parser = struct {
         if (self.current_token.type != .IDENT) {
             return error.ExpectedIdentifier;
         }
-        const name = self.current_token.value;
+        const name = try allocator.dupe(u8, self.current_token.value);
         self.advance();
 
         if (self.current_token.type != .COLON) {
@@ -177,6 +177,7 @@ pub const Parser = struct {
         //defer list.deinit();
 
         while (self.current_token.type != .EOF) {
+            std.debug.print("current token: {any} ('{s}')\n", .{ self.current_token.type, self.current_token.value });
             if (self.current_token.type == .RETURN) {
                 try list.append(try self.parseReturnStatement(allocator));
             } else if (self.current_token.type == .LET) {
@@ -184,6 +185,7 @@ pub const Parser = struct {
             } else if (self.current_token.type == .FN) {
                 try list.append(try self.parseFunctionDef(allocator));
             } else {
+                std.debug.print("unexpected token: {any} ('{s}')\n", .{ self.current_token.type, self.current_token.value });
                 unreachable; // lol
             }
         }
@@ -235,14 +237,14 @@ pub const Parser = struct {
         const fn_name = try allocator.dupe(u8, self.current_token.value);
         self.advance();
 
-        if (self.current_token.type != .RPAREN) {
+        if (self.current_token.type != .LPAREN) {
             return error.ExpectedParen;
         }
         self.advance();
 
         var param_list = std.ArrayList(ast.Parameter).init(allocator);
-        defer param_list.deinit();
-        while (self.current_token.type != .LPAREN) {
+        //defer param_list.deinit();
+        while (self.current_token.type != .RPAREN) {
             self.advance();
             try param_list.append(try self.parseParameter(allocator));
             //self.advance();
@@ -263,10 +265,10 @@ pub const Parser = struct {
         self.advance();
 
         var fn_body = std.ArrayList(ast.Stmt).init(allocator);
-        defer fn_body.deinit();
+        //defer fn_body.deinit();
 
         while (self.current_token.type != .RCURLY) {
-            self.advance();
+            //self.advance();
 
             if (self.current_token.type == .LET) {
                 try fn_body.append(try self.parseLetStatement(allocator));
@@ -278,6 +280,8 @@ pub const Parser = struct {
             }
         }
 
+        self.advance();
+
         return ast.Stmt{ .fun_def = .{
             .fun_name = fn_name,
             .fun_params = param_list,
@@ -288,10 +292,10 @@ pub const Parser = struct {
 
     fn parseFunctionCall(self: *Parser, allocator: std.mem.Allocator, name: []const u8) ParseError!*ast.Expr {
         // theoretically, parseFunctionCall should start after the (, and only parse the args/)
+        self.advance();
         var param_list = std.ArrayList(*ast.Expr).init(allocator);
-        defer param_list.deinit();
         while (self.current_token.type != .RPAREN) {
-            self.advance();
+            //self.advance();
             const arg = try self.parseExpression(allocator);
             try param_list.append(arg);
 
