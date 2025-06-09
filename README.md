@@ -1,28 +1,10 @@
-# kiwi
+# Kiwi Language
 
-A toy language I'm building in Zig. Example usage:
-
-```
-return 1;
-```
-
-Or expressions:
-
-```
-return 1*2+3;
-```
-
-Or variables:
-
-```
-let x = 1;
-let y = x + 2;
-return y;
-```
-
-Note: variables are always immutable.
+A toy language I'm building in Zig.
 
 You can find examples in the [docs directory](./docs/examples), and formal grammar [here](./docs/grammar.pdf).
+
+Note: variables are always immutable.
 
 More features are being actively worked on.
 
@@ -48,22 +30,21 @@ Note: the above steps can be automated by running `./run.sh`.
 
 ### ✅ Working
 
-- [x] Basic variable declarations (without type annotations)
+- [x] Basic variable declarations (with type annotations)
 - [x] Arithmetic expressions (`+`, `-`, `*`, `/`)
 - [x] Return statements
 - [x] Variable references
+- [x] Function declarations and calls
+- [x] Function parameters and return types
+- [x] Function calls
 
 ### 🔄 In Development
 
-- [ ] Type annotations for variables
-- [ ] Function declarations and calls
-- [ ] Function parameters and return types
-- [ ] Function calls
+- [ ] Conditional statements
+- [ ] Booleans
 
 ### 📋 Planned
 
 - [ ] Type checking and validation
-- [ ] Conditional statements
 - [ ] Strings
-- [ ] Booleans
 - [ ] Error handling
