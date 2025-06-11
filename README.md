@@ -40,12 +40,23 @@ Note: the above steps can be automated by running `./run.sh`.
 
 ### 🔄 In Development
 
-- [ ] Lambda Expressions
 - [ ] Conditional statements
+- [ ] Comparison operators
+- [ ] Logical operators
 - [ ] Booleans
+- [ ] Basic error messages
 
 ### 📋 Planned
 
 - [ ] Type checking and validation
+- [ ] Basic IO
+- [ ] First Class Functions
+- [ ] Arrays/Hashmaps
+- [ ] Pattern matching
+- [ ] Tuples
+- [ ] Import system/stdlib
+- [ ] More advanced compiler error messages
+- [ ] Comments
+- [ ] Lambda Expressions
 - [ ] Strings
 - [ ] Error handling
