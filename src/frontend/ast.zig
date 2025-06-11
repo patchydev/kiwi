@@ -2,6 +2,7 @@ const std = @import("std");
 
 pub const Type = union(enum) {
     int32,
+    boolean,
 
     pub fn equals(self: Type, other: Type) bool {
         return std.meta.eql(self, other);
@@ -9,27 +10,65 @@ pub const Type = union(enum) {
 };
 
 const TokenType = enum {
-    RETURN,
-    NUMBER,
-    SEMICOLON,
-    PLUS,
-    MINUS,
-    MULTIPLY,
-    DIVIDE,
-    LET,
-    IDENT,
-    ASSIGN,
-    FN,
-    LPAREN,
-    RPAREN,
-    LCURLY,
-    RCURLY,
-    COMMA,
-    COLON,
-    ARROW,
-    I32,
-    EOF,
-    INVALID,
+    RETURN, // return
+
+    NUMBER, // any num
+
+    SEMICOLON, // ;
+
+    PLUS, // +
+
+    MINUS, // -
+
+    MULTIPLY, // *
+
+    DIVIDE, // /
+
+    LET, // let
+
+    IDENT, // a name (for function, var, etc)
+
+    ASSIGN, // =
+
+    FN, // fn
+
+    LPAREN, // (
+
+    RPAREN, // )
+
+    LCURLY, // {
+
+    RCURLY, // }
+
+    COMMA, // ,
+
+    COLON, // :
+
+    ARROW, // ->
+
+    I32, // i32
+
+    BOOL, // bool
+
+    TRUE, // true
+
+    FALSE, // false
+
+    ISEQUAL, // ==
+
+    NOTEQUAL, // !=
+
+    GREATER, // >
+
+    LESS, // <
+
+    EGREATER, // >=
+
+    ELESS, // <=
+
+    EOF, // end of file
+
+    INVALID, // invalid token
 };
 
 pub const Token = struct {
@@ -52,6 +91,7 @@ pub const Expr = union(ExprType) {
         right: *Expr,
     },
     variable: []const u8,
+    boolean: bool,
     fun_call: struct {
         fun_name: []const u8,
         fun_args: std.ArrayList(*Expr),
