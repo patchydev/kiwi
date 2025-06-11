@@ -60,3 +60,7 @@ Note: the above steps can be automated by running `./run.sh`.
 - [ ] Lambda Expressions
 - [ ] Strings
 - [ ] Error handling
+
+### 🐛 Known Issues
+
+- [ ] Main function does not check what its return type is

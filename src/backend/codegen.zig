@@ -206,42 +206,10 @@ pub const CodeGen = struct {
             }
         }
 
-        std.debug.print("Creating main function\n", .{});
-        const int_type = c.LLVMInt32TypeInContext(self.context);
-        const main_type = c.LLVMFunctionType(int_type, null, 0, 0);
-        const main_func = c.LLVMAddFunction(self.module, "main", main_type);
-        std.debug.print("Main function created\n", .{});
-
-        const entry_block = c.LLVMAppendBasicBlockInContext(self.context, main_func, "entry");
-        c.LLVMPositionBuilderAtEnd(self.builder, entry_block);
-        std.debug.print("Entry block created\n", .{});
-
-        var result: ?c.LLVMValueRef = null;
-
-        for (list.items, 0..) |item, i| {
-            std.debug.print("Processing main body statement {}: {}\n", .{ i, item });
-            switch (item) {
-                ._return => {
-                    std.debug.print("Generating return expression\n", .{});
-                    result = try self.generateExpr(item._return);
-                    std.debug.print("Return expression generated\n", .{});
-                },
-                .bind => {
-                    std.debug.print("Generating bind statement for: {s}\n", .{item.bind.var_name});
-                    const value = try self.generateExpr(item.bind.var_value);
-                    std.debug.print("storing variable '{s}'\n", .{item.bind.var_name});
-                    try self.symbols.put(item.bind.var_name, value);
-                    std.debug.print("Bind statement generated\n", .{});
-                },
-                .fun_def => {
-                    std.debug.print("Skipping function definition in main body\n", .{});
-                },
-            }
+        if (self.functions.get("main") == null) {
+            std.debug.print("no main function\n", .{});
+            return error.NoMain;
         }
-
-        std.debug.print("Building return instruction\n", .{});
-        _ = c.LLVMBuildRet(self.builder, result.?);
-        std.debug.print("generateMain completed successfully\n", .{});
     }
 
     pub fn generateObjectFile(self: *CodeGen, output_path: []const u8, allocator: std.mem.Allocator) !void {
