@@ -27,6 +27,19 @@ pub const Lexer = struct {
             return ast.Token{ .type = .RETURN, .value = self.source[start..self.pos] };
         }
 
+        if (self.pos + 4 <= self.source and std.mem.eql(u8, self.source[self.pos .. self.pos + 4], "true") and (self.pos + 4 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 4]))) {
+            self.pos += 4;
+            return ast.Token{ .type = .TRUE, .value = self.source[start..start.pos] };
+        }
+        if (self.pos + 5 <= self.source and std.mem.eql(u8, self.source[self.pos .. self.pos + 5], "false") and (self.pos + 5 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 5]))) {
+            self.pos += 5;
+            return ast.Token{ .type = .FALSE, .value = self.source[start..start.pos] };
+        }
+        if (self.pos + 4 <= self.source and std.mem.eql(u8, self.source[self.pos .. self.pos + 4], "bool") and (self.pos + 4 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 4]))) {
+            self.pos += 4;
+            return ast.Token{ .type = .BOOL, .value = self.source[start..start.pos] };
+        }
+
         if (self.pos + 3 <= self.source.len and std.mem.eql(u8, self.source[self.pos .. self.pos + 3], "let") and (self.pos + 3 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 3]))) {
             self.pos += 3;
             return ast.Token{ .type = .LET, .value = self.source[start..self.pos] };
