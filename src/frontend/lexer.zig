@@ -52,6 +52,34 @@ pub const Lexer = struct {
             return ast.Token{ .type = .IDENT, .value = self.source[start..self.pos] };
         }
 
+        if (self.pos + 2 <= self.source.len and std.mem.eql(u8, self.source[self.pos .. self.pos + 2], "==") and (self.pos + 2 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 2]))) {
+            self.pos += 2;
+            return ast.Token{ .type = .ISEQUAL, .value = self.source[start..self.pos] };
+        }
+
+        if (self.pos + 2 <= self.source.len and std.mem.eql(u8, self.source[self.pos .. self.pos + 2], "!=") and (self.pos + 2 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 2]))) {
+            self.pos += 2;
+            return ast.Token{ .type = .NOTEQUAL, .value = self.source[start..self.pos] };
+        }
+        if (self.pos + 2 <= self.source.len and std.mem.eql(u8, self.source[self.pos .. self.pos + 2], "<=") and (self.pos + 2 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 2]))) {
+            self.pos += 2;
+            return ast.Token{ .type = .ELESS, .value = self.source[start..self.pos] };
+        }
+        if (self.pos + 2 <= self.source.len and std.mem.eql(u8, self.source[self.pos .. self.pos + 2], ">=") and (self.pos + 2 >= self.source.len or !std.ascii.isAlphanumeric(self.source[self.pos + 2]))) {
+            self.pos += 2;
+            return ast.Token{ .type = .EGREATER, .value = self.source[start..self.pos] };
+        }
+
+        if (self.source[self.pos] == '<') {
+            self.pos += 1;
+            return ast.Token{ .type = .LESS, .value = self.source[start..self.pos] };
+        }
+
+        if (self.source[self.pos] == '>') {
+            self.pos += 1;
+            return ast.Token{ .type = .GREATER, .value = self.source[start..self.pos] };
+        }
+
         if (self.source[self.pos] == '=') {
             self.pos += 1;
             return ast.Token{ .type = .ASSIGN, .value = self.source[start..self.pos] };
