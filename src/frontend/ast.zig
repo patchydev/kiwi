@@ -58,6 +58,8 @@ const TokenType = enum {
 
     NOTEQUAL, // !=
 
+    NOT, // !
+
     GREATER, // >
 
     LESS, // <
