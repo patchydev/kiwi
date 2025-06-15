@@ -39,7 +39,7 @@ pub const Parser = struct {
     }
 
     pub fn parsePrimary(self: *Parser, allocator: std.mem.Allocator) ParseError!*ast.Expr {
-        if (self.current_token.type != .NUMBER and self.current_token.type != .IDENT) {
+        if (self.current_token.type != .NUMBER and self.current_token.type != .IDENT and self.current_token.type != .TRUE and self.current_token.type != .FALSE) {
             return error.ExpectedNumber;
         }
         if (self.current_token.type == .NUMBER) {
@@ -48,6 +48,16 @@ pub const Parser = struct {
 
             const node = try allocator.create(ast.Expr);
             node.* = ast.Expr{ .number = value };
+            return node;
+        } else if (self.current_token.type == .TRUE) {
+            self.advance();
+            const node = try allocator.create(ast.Expr);
+            node.* = ast.Expr{ .boolean = true };
+            return node;
+        } else if (self.current_token.type == .FALSE) {
+            self.advance();
+            const node = try allocator.create(ast.Expr);
+            node.* = ast.Expr{ .boolean = false };
             return node;
         } else if (self.current_token.type == .IDENT) {
             const var_name = try allocator.dupe(u8, self.current_token.value); // have to do this because of funky shit happening
